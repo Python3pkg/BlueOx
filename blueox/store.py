@@ -233,7 +233,7 @@ def filter_log_files_for_active(log_files):
     for lf in log_files:
         files_by_type[lf.type_name].append(lf)
 
-    for type_files in files_by_type.values():
+    for type_files in list(files_by_type.values()):
         type_files.sort(key=lambda f: f.sort_dt)
 
         # We assume only the last log file in the list can be possibly be in

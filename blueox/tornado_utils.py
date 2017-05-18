@@ -147,7 +147,7 @@ class AsyncHTTPClient(tornado.simple_httpclient.SimpleAsyncHTTPClient):
     def fetch(self, request, callback=None, **kwargs):
         start_time = time.time()
 
-        if isinstance(request, basestring):
+        if isinstance(request, str):
             request = tornado.httpclient.HTTPRequest(url=request, **kwargs)
 
         ctx = blueox.Context(self.blueox_name)

@@ -117,7 +117,7 @@ def send(context):
             log.debug("Sending msg")
             threadLocal.zmq_socket.send_multipart(
                 (meta_data, context_data), zmq.NOBLOCK)
-        except zmq.ZMQError, e:
+        except zmq.ZMQError as e:
             log.exception("Failed sending blueox event, buffer full?")
     else:
         log.info("Skipping sending event %s", context.name)

@@ -347,7 +347,7 @@ class FindLogFilesInLocalTest(TestCase):
             dt_str = dt.strftime('%Y%m%d%H')
             full_path = os.path.join(self.log_path, date_str, "foo-{}.log".format(dt_str))
             with io.open(full_path, "w") as f:
-                f.write(u"hi")
+                f.write("hi")
 
         start_dt = datetime.datetime(2015, 5, 19, 1)
         end_dt = datetime.datetime(2015, 5, 19, 3)

@@ -65,7 +65,7 @@ class AsyncRecurseTimeoutHandler(blueox.tornado_utils.BlueOxRequestHandlerMixin,
         blueox.set("start", True)
         try:
             f = yield http_client.fetch(self.request.body, request_timeout=0.5)
-        except tornado.httpclient.HTTPError, e:
+        except tornado.httpclient.HTTPError as e:
             self.write("got it")
         else:
             self.write("nope")
@@ -120,7 +120,7 @@ class SimpleTestCase(tornado_test.AsyncHTTPTestCase):
         assert_equal(len(self.log_ctx), 2)
 
         found_exception = False
-        for ctx_list in self.log_ctx.values():
+        for ctx_list in list(self.log_ctx.values()):
             for ctx in ctx_list:
                 if ctx.to_dict()['body'].get('exception'):
                     found_exception = True
@@ -137,7 +137,7 @@ class SimpleTestCase(tornado_test.AsyncHTTPTestCase):
                 #pprint.pprint(ctx.to_dict())
 
         assert_equal(len(self.log_ctx), 1)
-        ctx = self.log_ctx[self.log_ctx.keys()[0]][0]
+        ctx = self.log_ctx[list(self.log_ctx.keys())[0]][0]
         assert_equal(get_deep(ctx.to_dict(), 'body.response.code'), 599)
 
     def test_recurse_timeout_error(self):
@@ -158,7 +158,7 @@ class SimpleTestCase(tornado_test.AsyncHTTPTestCase):
 
         found_timeout = False
         found_request = False
-        for ctx_list in self.log_ctx.values():
+        for ctx_list in list(self.log_ctx.values()):
             for ctx in ctx_list:
                 c = ctx.to_dict()
                 if c['type'] == 'request.httpclient' and c['body']['response']['code'] == 599:
@@ -186,7 +186,7 @@ class SimpleTestCase(tornado_test.AsyncHTTPTestCase):
         found_sync = None
         found_async = None
         found_client = 0
-        for ctx_list in self.log_ctx.values():
+        for ctx_list in list(self.log_ctx.values()):
             for ctx in ctx_list:
                 if ctx.name == "request" and ctx.to_dict()['body']['async']:
                     assert_equal(len(ctx_list), 3)

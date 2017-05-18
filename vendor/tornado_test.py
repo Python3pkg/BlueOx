@@ -2,7 +2,7 @@
 Testify.
 
 """
-import Cookie
+import http.cookies
 import tornado.httputil
 from tornado.httpclient import AsyncHTTPClient
 from tornado.httpserver import HTTPServer
@@ -12,7 +12,7 @@ import logging
 import sys
 import time
 import json
-import urlparse
+import urllib.parse
 import pprint
 
 try:
@@ -202,9 +202,9 @@ class AsyncTestCase(testify.TestCase):
             # 2to3 isn't smart enough to convert three-argument raise
             # statements correctly in some cases.
             if isinstance(self.__failure[1], self.__failure[0]):
-                raise self.__failure[1], None, self.__failure[2]
+                raise self.__failure[1].with_traceback(self.__failure[2])
             else:
-                raise self.__failure[0], self.__failure[1], self.__failure[2]
+                raise self.__failure[0](self.__failure[1]).with_traceback(self.__failure[2])
         result = self.__stop_args
         self.__stop_args = None
         return result
@@ -277,10 +277,10 @@ class AsyncHTTPTestCase(AsyncTestCase):
             timeout = kwargs.pop('timeout')
         
         if hasattr(request, 'url'):
-            parsed = urlparse.urlparse(request.url)
+            parsed = urllib.parse.urlparse(request.url)
             request.url = self.update_urlparsed(parsed)
         else:
-            parsed = urlparse.urlparse(request)
+            parsed = urllib.parse.urlparse(request)
             request = self.update_urlparsed(parsed)
 
         if 'headers' in kwargs and not isinstance(kwargs['headers'], tornado.httputil.HTTPHeaders):
@@ -289,27 +289,27 @@ class AsyncHTTPTestCase(AsyncTestCase):
         else:
             kwargs.setdefault('headers', tornado.httputil.HTTPHeaders())
 
-        if 'body' in kwargs and not isinstance(kwargs['body'], basestring):
+        if 'body' in kwargs and not isinstance(kwargs['body'], str):
             kwargs['body'] = json.dumps(kwargs['body'])
             kwargs['headers']['Content-Type'] = 'application/json'
 
         if 'cookies' in kwargs:
             for cookie in kwargs['cookies']:
-                for val in cookie.values():
+                for val in list(cookie.values()):
                     kwargs['headers'].add('Cookie', val.OutputString(None))
 
         if self.cookie_jar:
-            cookie = Cookie.SimpleCookie(self.cookie_jar)
-            for val in cookie.values():
+            cookie = http.cookies.SimpleCookie(self.cookie_jar)
+            for val in list(cookie.values()):
                 kwargs['headers'].add('Cookie', val.OutputString(None))
         
         self.http_client.fetch(request, self.stop, **kwargs)
         res = self.wait(timeout=timeout)
 
         for cookie_val in res.headers.get_list('set-cookie'):
-            cookie = Cookie.SimpleCookie()
+            cookie = http.cookies.SimpleCookie()
             cookie.load(cookie_val)
-            for val in cookie.values():
+            for val in list(cookie.values()):
                 if not val.value:
                     del self.cookie_jar[val.key]
                 else:
@@ -343,6 +343,6 @@ class AsyncHTTPTestCase(AsyncTestCase):
         return 'http://localhost:%s%s' % (self.get_http_port(), path)
     
     def update_urlparsed(self, parsed):
-        return urlparse.urlunparse(['http', 'localhost:%s' % self.get_http_port()] + list(parsed[2:]))
+        return urllib.parse.urlunparse(['http', 'localhost:%s' % self.get_http_port()] + list(parsed[2:]))
         
 

@@ -44,7 +44,7 @@ def decode_stream(stream):
 
     while True:
         try:
-            data = stream.next()
+            data = next(stream)
         except StopIteration:
             break
 

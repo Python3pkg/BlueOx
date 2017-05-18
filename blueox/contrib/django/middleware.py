@@ -27,7 +27,7 @@ class Middleware(object):
         blueox.set('path', request.path)
 
         headers = {}
-        for k, v in request.META.iteritems():
+        for k, v in request.META.items():
             if k.startswith('HTTP_') or k in ('CONTENT_LENGTH', 'CONTENT_TYPE'):
                 headers[k] = v
         blueox.set('headers', headers)
@@ -60,7 +60,7 @@ class Middleware(object):
                 blueox.set('response_size', len(response.content))
 
             headers = {}
-            for k, v in response.items():
+            for k, v in list(response.items()):
                 headers[k] = v
 
             blueox.set('response_headers', headers)
